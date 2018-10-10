@@ -4,11 +4,20 @@ module.exports = (sequelize, DataTypes) => {
     title: DataTypes.STRING,
     description: DataTypes.STRING
   }, {});
+
   Topic.associate = function(models) {
     Topic.hasMany(models.Banner, {
       foreignKey: "topicId",
-      as: "banners",
+      as: "banners"
     });
   };
+
+  Topic.associate = function(models) {
+    Topic.hasMany(models.Rule, {
+      foreignKey: "topicId",
+      as: "rules"
+    });
+  };
+
   return Topic;
 };
