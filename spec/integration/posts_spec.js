@@ -62,17 +62,17 @@ describe("routes : posts", () => {
             const options = {
                 url: `${base}/${this.topic.id}/posts/create`,
                 form: {
-                    title: "Watching snow melt",
-                    body: "Without a doubt my favoriting things to do besides watching paint dry!"
+                    title: "Watching snow fall",
+                    body: "It's the best time of the year!"
                 }
             };
             request.post(options, (err, res, body) => {
 
-                Post.findOne({where: {title: "Watching snow melt"}})
+                Post.findOne({where: {title: "Watching snow fall"}})
                 .then((post) => {
                     expect(post).not.toBeNull();
-                    expect(post.title).toBe("Watching snow melt");
-                    expect(post.body).toBe("Without a doubt my favoriting things to do besides watching paint dry!");
+                    expect(post.title).toBe("Watching snow fall");
+                    expect(post.body).toBe("It's the best time of the year!");
                     expect(post.topicId).not.toBeNull();
                     
                     done();
@@ -83,6 +83,35 @@ describe("routes : posts", () => {
                     done();
                 });
             });
+        });
+
+        it("should not create a new post that fails validations", (done) => {
+            const options = {
+                url: `${base}/${this.topic.id}/posts/create`,
+                form: {
+     
+     // pass in values that should not pass validations
+                    title: "a",
+                    body: "b"
+                }
+            };
+     
+            request.post(options, (err, res, body) => {
+     
+     // look for a post matching the title passed in with the request and confirm that one doesn't exist
+                Post.findOne({where: {title: "a"}})
+                .then((post) => {
+                    expect(post).toBeNull();
+                    
+                    done();
+                })
+                .catch((err) => {
+                    console.log(err);
+                    
+                    done();
+                });
+              }
+            );
         });
      
     });
@@ -141,7 +170,7 @@ describe("routes : posts", () => {
                 url: `${base}/${this.topic.id}/posts/${this.post.id}/update`,
                 form: {
                     title: "Snowman Building Competition",
-                    body: "I love watching them melt slowly."
+                    body: "Who can build the largest of them all?"
                 }
             }, 
             (err, res, body) => {
@@ -166,7 +195,7 @@ describe("routes : posts", () => {
                     where: {id: this.post.id}
                 })
                 .then((post) => {
-                    expect(post.title).toBe("Snowman Building Competition");
+                    expect(post.title).toBe("Snowball Fighting");
                     
                     done();
                 });
