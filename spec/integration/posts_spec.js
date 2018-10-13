@@ -15,6 +15,7 @@ describe("routes : posts", () => {
         this.user;
    
         sequelize.sync({force: true}).then((res) => {
+<<<<<<< HEAD
             User.create({
                 email: "starman@tesla.com",
                 password: "Trekkie4lyfe"
@@ -43,6 +44,35 @@ describe("routes : posts", () => {
                     done();
                 })
             })
+=======
+          User.create({
+            email: "starman@tesla.com",
+            password: "Trekkie4lyfe"
+          })
+          .then((user) => {
+            this.user = user;
+   
+            Topic.create({
+              title: "Winter Games",
+              description: "Post your Winter Games stories.",
+              posts: [{
+                title: "Snowball Fighting",
+                body: "So much snow!",
+                userId: this.user.id
+              }]
+            }, {
+              include: {
+               model: Post,
+               as: "posts"
+              }
+            })
+            .then((topic) => {
+              this.topic = topic;
+              this.post = topic.posts[0];
+              done();
+            })
+          })
+>>>>>>> attempt-2-checkpoint-authorization
         });
    
     });

@@ -12,6 +12,7 @@ describe("Post", () => {
    
         sequelize.sync({force: true}).then((res) => {
    
+<<<<<<< HEAD
             User.create({
                 email: "starman@tesla.com",
                 password: "Trekkie4lyfe"
@@ -40,6 +41,35 @@ describe("Post", () => {
                     done();
                 })
             })
+=======
+          User.create({
+            email: "starman@tesla.com",
+            password: "Trekkie4lyfe"
+          })
+          .then((user) => {
+            this.user = user; //store the user
+   
+            Topic.create({
+              title: "Expeditions to Alpha Centauri",
+              description: "A compilation of reports from recent visits to the star system.",
+              posts: [{
+                title: "My first visit to Proxima Centauri b",
+                body: "I saw some rocks.",
+                userId: this.user.id
+              }]
+            }, {
+              include: {
+                model: Post,
+                as: "posts"
+              }
+            })
+            .then((topic) => {
+              this.topic = topic; //store the topic
+              this.post = topic.posts[0]; //store the post
+              done();
+            })
+          })
+>>>>>>> attempt-2-checkpoint-authorization
         });
     });
 
@@ -160,9 +190,15 @@ describe("Post", () => {
         });
    
     });
+<<<<<<< HEAD
 
     describe("#getUser()", () => {
 
+=======
+   
+    describe("#getUser()", () => {
+   
+>>>>>>> attempt-2-checkpoint-authorization
         it("should return the associated topic", (done) => {
    
           this.post.getUser()

@@ -45,7 +45,10 @@ module.exports = {
         return Topic.findById(req.params.id)
         .then((topic) => {
             const authorized = new Authorizer(req.user, topic).destroy();
+<<<<<<< HEAD
 
+=======
+>>>>>>> attempt-2-checkpoint-authorization
             if(authorized) {
                 topic.destroy()
                 .then((res) => {

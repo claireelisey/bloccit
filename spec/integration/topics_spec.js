@@ -28,6 +28,7 @@ describe("routes : topics", () => {
   
     });
 
+<<<<<<< HEAD
 
     // context of admin user
     describe("admin user performing CRUD actions for Topic", () => {
@@ -59,16 +60,61 @@ describe("routes : topics", () => {
 
         describe("GET /topics", () => {
 
+=======
+    // define the admin user context
+    describe("admin user performing CRUD actions for Topic", () => {
+
+        beforeEach((done) => {
+            User.create({
+              email: "admin@example.com",
+              password: "123456",
+              role: "admin"
+            })
+            .then((user) => {
+              request.get({         // mock authentication
+                url: "http://localhost:3000/auth/fake",
+                form: {
+                  role: user.role,     // mock authenticate as admin user
+                  userId: user.id,
+                  email: user.email
+                }
+              },
+                (err, res, body) => {
+                  done();
+                }
+              );
+            });
+        });
+
+
+        describe("GET /topics", () => {
+
+>>>>>>> attempt-2-checkpoint-authorization
             it("should return a status code 200 and all topics", (done) => {
                 request.get(base, (err, res, body) => {
                     expect(res.statusCode).toBe(200);
                     expect(err).toBeNull();
                     expect(body).toContain("Topics");
                     expect(body).toContain("JS Frameworks");
+<<<<<<< HEAD
+=======
                     done();
                 });
             });
         });
+
+        describe("GET /topics/new", () => {
+            it("should render a new topic form", (done) => {
+                request.get(`${base}new`, (err, res, body) => {
+                    expect(err).toBeNull();
+                    expect(body).toContain("New Topic");
+
+>>>>>>> attempt-2-checkpoint-authorization
+                    done();
+                });
+            });
+        });
+<<<<<<< HEAD
     
         describe("GET /topics/new", () => {
             it("should render a new topic form", (done) => {
@@ -81,6 +127,9 @@ describe("routes : topics", () => {
               });
         });
     
+=======
+
+>>>>>>> attempt-2-checkpoint-authorization
         describe("POST /topics/create", () => {
             const options = {
                 url: `${base}create`,
@@ -89,7 +138,11 @@ describe("routes : topics", () => {
                     description: "What's your favorite blink-182 song?"
                 }
             };
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> attempt-2-checkpoint-authorization
             it("should create a new topic and redirect", (done) => {
                 request.post(options, (err, res, body) => {
                     Topic.findOne({where: {title: "blink-182 songs"}})
@@ -105,7 +158,11 @@ describe("routes : topics", () => {
                     });
                 });
             });
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> attempt-2-checkpoint-authorization
             it("should not create a new topic that fails validations", (done) => {
                 const options = {
                     url: `${base}create`,
@@ -114,9 +171,15 @@ describe("routes : topics", () => {
                         description: "b"
                     }
                 };
+<<<<<<< HEAD
          
                 request.post(options, (err, res, body) => {
     
+=======
+        
+                request.post(options, (err, res, body) => {
+
+>>>>>>> attempt-2-checkpoint-authorization
                     Topic.findOne({where: {title: "a"}})
                     .then((topic) => {
                         expect(topic).toBeNull();
@@ -125,6 +188,7 @@ describe("routes : topics", () => {
                     })
                     .catch((err) => {
                         console.log(err);
+<<<<<<< HEAD
     
                         done();
                     });
@@ -136,10 +200,24 @@ describe("routes : topics", () => {
     
         describe("GET /topics/:id", () => {
     
+=======
+
+                        done();
+                    });
+                }
+                );
+            });
+
+        });
+
+        describe("GET /topics/:id", () => {
+
+>>>>>>> attempt-2-checkpoint-authorization
             it("should render a view with the selected topic", (done) => {
                 request.get(`${base}${this.topic.id}`, (err, res, body) => {
                     expect(err).toBeNull();
                     expect(body).toContain("JS Frameworks");
+<<<<<<< HEAD
     
                     done();
                 });
@@ -192,6 +270,60 @@ describe("routes : topics", () => {
     
             it("should update the topic with the given values", (done) => {
                const options = {
+=======
+
+                    done();
+                });
+            });
+    
+        });
+
+        describe("POST /topics/:id/destroy", () => {
+
+            it("should delete the topic with the associated ID", (done) => {
+    
+                Topic.all()
+                .then((topics) => {
+
+                    const topicCountBeforeDelete = topics.length;
+
+                    expect(topicCountBeforeDelete).toBe(1);
+
+                    request.post(`${base}${this.topic.id}/destroy`, (err, res, body) => {
+                        Topic.all()
+                        .then((topics) => {
+                            expect(err).toBeNull();
+                            expect(topics.length).toBe(topicCountBeforeDelete - 1);
+                            
+                            done();
+                        })
+
+                    });
+                });
+    
+            });
+    
+        });
+
+        describe("GET /topics/:id/edit", () => {
+
+            it("should render a view with an edit topic form", (done) => {
+                request.get(`${base}${this.topic.id}/edit`, (err, res, body) => {
+                    expect(err).toBeNull();
+                    expect(body).toContain("Edit Topic");
+                    expect(body).toContain("JS Frameworks");
+
+                    done();
+                });
+            });
+    
+        });
+
+        describe("POST /topics/:id/update", () => {
+
+            it("should update the topic with the given values", (done) => {
+            const options = {
+>>>>>>> attempt-2-checkpoint-authorization
                     url: `${base}${this.topic.id}/update`,
                     form: {
                         title: "JavaScript Frameworks",
@@ -205,11 +337,16 @@ describe("routes : topics", () => {
                     })
                     .then((topic) => {
                         expect(topic.title).toBe("JavaScript Frameworks");
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> attempt-2-checkpoint-authorization
                         done();
                     });
                 });
             });
+<<<<<<< HEAD
        
         });
 
@@ -218,10 +355,21 @@ describe("routes : topics", () => {
 
 
     // context of member user
+=======
+    
+        });
+
+    });
+    // end admin user context
+    
+
+    // define the member user context
+>>>>>>> attempt-2-checkpoint-authorization
     describe("member user performing CRUD actions for Topic", () => {
 
         beforeEach((done) => {
             request.get({
+<<<<<<< HEAD
                 url: "http://localhost:3000/auth/fake",
                 form: {
                     role: "member"
@@ -258,6 +406,43 @@ describe("routes : topics", () => {
               });
         });
     
+=======
+              url: "http://localhost:3000/auth/fake",
+              form: {
+                role: "member"
+              }
+            },
+              (err, res, body) => {
+                done();
+              }
+            );
+        });
+
+        describe("GET /topics", () => {
+
+            it("should return a status code 200 and all topics", (done) => {
+                request.get(base, (err, res, body) => {
+                    expect(res.statusCode).toBe(200);
+                    expect(err).toBeNull();
+                    expect(body).toContain("Topics");
+                    expect(body).toContain("JS Frameworks");
+                    done();
+                });
+            });
+        });
+
+        describe("GET /topics/new", () => {
+            it("should render a new topic form", (done) => {
+                request.get(`${base}new`, (err, res, body) => {
+                    expect(err).toBeNull();
+                    expect(body).toContain("New Topic");
+
+                    done();
+                });
+            });
+        });
+
+>>>>>>> attempt-2-checkpoint-authorization
         describe("POST /topics/create", () => {
             const options = {
                 url: `${base}create`,
@@ -266,7 +451,11 @@ describe("routes : topics", () => {
                     description: "What's your favorite blink-182 song?"
                 }
             };
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> attempt-2-checkpoint-authorization
             it("should create a new topic and redirect", (done) => {
                 request.post(options, (err, res, body) => {
                     Topic.findOne({where: {title: "blink-182 songs"}})
@@ -282,7 +471,11 @@ describe("routes : topics", () => {
                     });
                 });
             });
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> attempt-2-checkpoint-authorization
             it("should not create a new topic that fails validations", (done) => {
                 const options = {
                     url: `${base}create`,
@@ -291,9 +484,15 @@ describe("routes : topics", () => {
                         description: "b"
                     }
                 };
+<<<<<<< HEAD
          
                 request.post(options, (err, res, body) => {
     
+=======
+        
+                request.post(options, (err, res, body) => {
+
+>>>>>>> attempt-2-checkpoint-authorization
                     Topic.findOne({where: {title: "a"}})
                     .then((topic) => {
                         expect(topic).toBeNull();
@@ -302,6 +501,7 @@ describe("routes : topics", () => {
                     })
                     .catch((err) => {
                         console.log(err);
+<<<<<<< HEAD
     
                         done();
                     });
@@ -313,16 +513,106 @@ describe("routes : topics", () => {
     
         describe("GET /topics/:id", () => {
     
+=======
+
+                        done();
+                    });
+                }
+                );
+            });
+
+        });
+
+        describe("GET /topics/:id", () => {
+
+>>>>>>> attempt-2-checkpoint-authorization
             it("should render a view with the selected topic", (done) => {
                 request.get(`${base}${this.topic.id}`, (err, res, body) => {
                     expect(err).toBeNull();
                     expect(body).toContain("JS Frameworks");
+<<<<<<< HEAD
     
                     done();
                 });
             });
        
         });
+=======
+
+                    done();
+                });
+            });
+    
+        });
+
+        describe("POST /topics/:id/destroy", () => {
+
+            it("should delete the topic with the associated ID", (done) => {
+    
+                Topic.all()
+                .then((topics) => {
+
+                    const topicCountBeforeDelete = topics.length;
+
+                    expect(topicCountBeforeDelete).toBe(1);
+
+                    request.post(`${base}${this.topic.id}/destroy`, (err, res, body) => {
+                        Topic.all()
+                        .then((topics) => {
+                            expect(err).toBeNull();
+                            expect(topics.length).toBe(topicCountBeforeDelete - 1);
+                            
+                            done();
+                        })
+
+                    });
+                });
+    
+            });
+    
+        });
+
+        describe("GET /topics/:id/edit", () => {
+
+            it("should render a view with an edit topic form", (done) => {
+                request.get(`${base}${this.topic.id}/edit`, (err, res, body) => {
+                    expect(err).toBeNull();
+                    expect(body).toContain("Edit Topic");
+                    expect(body).toContain("JS Frameworks");
+
+                    done();
+                });
+            });
+    
+        });
+
+        describe("POST /topics/:id/update", () => {
+
+            it("should update the topic with the given values", (done) => {
+            const options = {
+                    url: `${base}${this.topic.id}/update`,
+                    form: {
+                        title: "JavaScript Frameworks",
+                        description: "There are a lot of them"
+                    }
+                };
+                request.post(options, (err, res, body) => {
+                    expect(err).toBeNull();
+                    Topic.findOne({
+                        where: { id: this.topic.id }
+                    })
+                    .then((topic) => {
+                        expect(topic.title).toBe("JavaScript Frameworks");
+
+                        done();
+                    });
+                });
+            });
+    
+        });
+
+    });
+>>>>>>> attempt-2-checkpoint-authorization
     
         describe("POST /topics/:id/destroy", () => {
     
