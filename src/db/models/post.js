@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = (sequelize, DataTypes) => {
+
   var Post = sequelize.define('Post', {
 
 // Set a not null constraint on the title and body attributes
@@ -17,8 +18,13 @@ module.exports = (sequelize, DataTypes) => {
     topicId: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
     }
   }, {});
+
   Post.associate = function(models) {
 
     // associations can be defined here
@@ -30,6 +36,11 @@ module.exports = (sequelize, DataTypes) => {
     Post.hasMany(models.Flair, {
       foreignKey: "postId",
       as: "flairs"
+    });
+
+    Post.belongsTo(models.User, {
+      foreignKey: "userId",
+      onDelete: "CASCADE"
     });
 
   };

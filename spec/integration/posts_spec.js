@@ -5,41 +5,45 @@ const base = "http://localhost:3000/topics";
 const sequelize = require("../../src/db/models/index").sequelize;
 const Topic = require("../../src/db/models").Topic;
 const Post = require("../../src/db/models").Post;
+const User = require("../../src/db/models").User;
 
 describe("routes : posts", () => {
 
     beforeEach((done) => {
         this.topic;
         this.post;
-
+        this.user;
+   
         sequelize.sync({force: true}).then((res) => {
-
-// In beforeEach, we create a Topic object followed by a Post object and associate them.
+          User.create({
+            email: "starman@tesla.com",
+            password: "Trekkie4lyfe"
+          })
+          .then((user) => {
+            this.user = user;
+   
             Topic.create({
-                title: "Winter Games",
-                description: "Post your Winter Games stories."
+              title: "Winter Games",
+              description: "Post your Winter Games stories.",
+              posts: [{
+                title: "Snowball Fighting",
+                body: "So much snow!",
+                userId: this.user.id
+              }]
+            }, {
+              include: {
+               model: Post,
+               as: "posts"
+              }
             })
             .then((topic) => {
-                this.topic = topic;
-
-                Post.create({
-                    title: "Snowball Fighting",
-                    body: "So much snow!",
-                    topicId: this.topic.id
-                })
-                .then((post) => {
-                    this.post = post;
-                    
-                    done();
-                })
-                .catch((err) => {
-                    console.log(err);
-                    
-                    done();
-                });
-            });
+              this.topic = topic;
+              this.post = topic.posts[0];
+              done();
+            })
+          })
         });
-
+   
     });
 
     describe("GET /topics/:topicId/posts/new", () => {
