@@ -1,9 +1,12 @@
+const request = require("request");
+const server = require("../../src/server");
+const base = "http://localhost:3000/topics";
 const sequelize = require("../../src/db/models/index").sequelize;
 const Topic = require("../../src/db/models").Topic;
 const Post = require("../../src/db/models").Post;
 const User = require("../../src/db/models").User;
 
-describe("Post", () => {
+describe("routes : posts", () => {
 
     beforeEach((done) => {
         this.topic;
@@ -11,173 +14,393 @@ describe("Post", () => {
         this.user;
    
         sequelize.sync({force: true}).then((res) => {
-   
           User.create({
             email: "starman@tesla.com",
             password: "Trekkie4lyfe"
           })
           .then((user) => {
-            this.user = user; //store the user
+            this.user = user;
    
             Topic.create({
-              title: "Expeditions to Alpha Centauri",
-              description: "A compilation of reports from recent visits to the star system.",
+              title: "Winter Games",
+              description: "Post your Winter Games stories.",
               posts: [{
-                title: "My first visit to Proxima Centauri b",
-                body: "I saw some rocks.",
+                title: "Snowball Fighting",
+                body: "So much snow!",
                 userId: this.user.id
               }]
             }, {
               include: {
-                model: Post,
-                as: "posts"
+               model: Post,
+               as: "posts"
               }
             })
             .then((topic) => {
-              this.topic = topic; //store the topic
-              this.post = topic.posts[0]; //store the post
+              this.topic = topic;
+              this.post = topic.posts[0];
               done();
             })
           })
         });
+   
     });
 
-    describe("#create()", () => {
 
-        it("should create a post object with a title, body, and assigned topic and user", (done) => {
-   // Create a post and associate it with the topic created in beforeEach
-            Post.create({
-                title: "Pros of Cryosleep during the long journey",
-                body: "1. Not having to answer the 'are we there yet?' question.",
-                topicId: this.topic.id,
-                userId: this.user.id
+    // define the member user context
+    describe("member user performing CRUD actions for Post", () => {
+
+        beforeEach((done) => {
+            User.create({
+              email: "admin@example.com",
+              password: "123456",
+              role: "member"
             })
-            .then((post) => {
-   
-   // Check to make sure we save the post successfully
-            expect(post.title).toBe("Pros of Cryosleep during the long journey");
-            expect(post.body).toBe("1. Not having to answer the 'are we there yet?' question.");
-            expect(post.topicId).toBe(this.topic.id);
-            expect(post.userId).toBe(this.user.id);
-            
-            done();
-            })
-            .catch((err) => {
-                console.log(err);
-                
-                done();
+            .then((user) => {
+              request.get({         // mock authentication
+                url: "http://localhost:3000/auth/fake",
+                form: {
+                  role: user.role,     // mock authenticate as admin user
+                  userId: user.id,
+                  email: user.email
+                }
+              },
+                (err, res, body) => {
+                  done();
+                }
+              );
             });
         });
 
-        it("should not create a post with missing title, body, or assigned topic", (done) => {
-            Post.create({
-                title: "Pros of Cryosleep during the long journey"
-            })
-            .then((post) => {
-       
-             // the code in this block will not be evaluated since the validation error
-             // will skip it. Instead, we'll catch the error in the catch block below
-             // and set the expectations there
-       
-                done();
-       
-            })
-            .catch((err) => {
-       
-                expect(err.message).toContain("Post.body cannot be null");
-                expect(err.message).toContain("Post.topicId cannot be null");
-                console.log(err);
+        describe("GET /topics/:topicId/posts/new", () => {
 
-                done();
-       
-            })
-        });
-    
-    });
-
-    describe("#setTopic()", () => {
-
-        it("should associate a topic and a post together", (done) => {
-    
-    // Create a new topic with a unique ID
-            Topic.create({
-                title: "Challenges of interstellar travel",
-                description: "1. The Wi-Fi is terrible"
-            })
-            .then((newTopic) => {
-    
-        // Confirm the association of the topic and post objects created in the  beforeEach call
-                expect(this.post.topicId).toBe(this.topic.id);
-        // Call setTopic on post and associate it with the new topic, newTopic
-                this.post.setTopic(newTopic)
-                .then((post) => {
-        // Confirm the new association
-                    expect(post.topicId).toBe(newTopic.id);
-                    
-                    done();
-        
-                })
-                .catch((err) => {
-                    console.log(err);
+            it("should render a new post form", (done) => {
+                request.get(`${base}/${this.topic.id}/posts/new`, (err, res, body) => {
+                    expect(err).toBeNull();
+                    expect(body).toContain("New Post");
                     
                     done();
                 });
-            })
+            });
+        
         });
     
-    });
-
-    describe("#getTopic()", () => {
-
-        it("should return the associated topic", (done) => {
-   
-            this.post.getTopic()
-            .then((associatedTopic) => {
-                expect(associatedTopic.title).toBe("Expeditions to Alpha Centauri");
-                
-                done();
+        describe("POST /topics/:topicId/posts/create", () => {
+    
+            it("should create a new post and redirect", (done) => {
+                const options = {
+                    url: `${base}/${this.topic.id}/posts/create`,
+                    form: {
+                        title: "Watching snow fall",
+                        body: "It's the best time of the year!"
+                    }
+                };
+                request.post(options, (err, res, body) => {
+    
+                    Post.findOne({where: {title: "Watching snow fall"}})
+                    .then((post) => {
+                        expect(post).not.toBeNull();
+                        expect(post.title).toBe("Watching snow fall");
+                        expect(post.body).toBe("It's the best time of the year!");
+                        expect(post.topicId).not.toBeNull();
+                        
+                        done();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    
+                        done();
+                    });
+                });
             });
-   
-        });
-   
-    });
-
-    describe("#setUser()", () => {
-
-        it("should associate a post and a user together", (done) => {
-   
-          User.create({
-            email: "ada@example.com",
-            password: "password"
-          })
-          .then((newUser) => {
-   
-            expect(this.post.userId).toBe(this.user.id);
-   
-            this.post.setUser(newUser)
-            .then((post) => {
-   
-              expect(this.post.userId).toBe(newUser.id);
-              done();
-   
+    
+            it("should not create a new post that fails validations", (done) => {
+                const options = {
+                    url: `${base}/${this.topic.id}/posts/create`,
+                    form: {
+         
+         // pass in values that should not pass validations
+                        title: "a",
+                        body: "b"
+                    }
+                };
+         
+                request.post(options, (err, res, body) => {
+         
+         // look for a post matching the title passed in with the request and confirm that one doesn't exist
+                    Post.findOne({where: {title: "a"}})
+                    .then((post) => {
+                        expect(post).toBeNull();
+                        
+                        done();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                        
+                        done();
+                    });
+                  }
+                );
             });
-          })
+         
         });
-   
-    });
-   
-    describe("#getUser()", () => {
-   
-        it("should return the associated topic", (done) => {
-   
-          this.post.getUser()
-          .then((associatedUser) => {
-            expect(associatedUser.email).toBe("starman@tesla.com");
-            done();
-          });
-   
+    
+        describe("GET /topics/:topicId/posts/:id", () => {
+    
+            it("should render a view with the selected post", (done) => {
+                request.get(`${base}/${this.topic.id}/posts/${this.post.id}`, (err, res, body) => {
+                    expect(err).toBeNull();
+                    expect(body).toContain("Snowball Fighting");
+                    
+                    done();
+                });
+            });
+       
         });
-   
+    
+        describe("POST /topics/:topicId/posts/:id/destroy", () => {
+    
+            it("should delete the post with the associated ID", (done) => {
+                expect(this.post.id).toBe(1);
+                request.post(`${base}/${this.topic.id}/posts/${this.post.id}/destroy`, (err, res, body) => {
+    
+                    Post.findById(1)
+                    .then((post) => {
+                        expect(err).toBeNull();
+                        expect(post).toBeNull();
+                        
+                        done();
+                    })
+        
+                });
+    
+            });
+       
+        });
+    
+        describe("GET /topics/:topicId/posts/:id/edit", () => {
+    
+            it("should render a view with an edit post form", (done) => {
+                request.get(`${base}/${this.topic.id}/posts/${this.post.id}/edit`, (err, res, body) => {
+                    expect(err).toBeNull();
+                    expect(body).toContain("Edit Post");
+                    expect(body).toContain("Snowball Fighting");
+                    
+                    done();
+                });
+            });
+       
+        });
+    
+        describe("POST /topics/:topicId/posts/:id/update", () => {
+    
+            it("should return a status code 302", (done) => {
+                request.post({
+                    url: `${base}/${this.topic.id}/posts/${this.post.id}/update`,
+                    form: {
+                        title: "Snowman Building Competition",
+                        body: "Who can build the largest of them all?"
+                    }
+                }, 
+                (err, res, body) => {
+                    expect(res.statusCode).toBe(302);
+                    
+                    done();
+                });
+            });
+       
+            it("should update the post with the given values", (done) => {
+                const options = {
+                    url: `${base}/${this.topic.id}/posts/${this.post.id}/update`,
+                    form: {
+                        title: "Snowman Building Competition"
+                    }
+                };
+                request.post(options, (err, res, body) => {
+    
+                    expect(err).toBeNull();
+    
+                    Post.findOne({
+                        where: {id: this.post.id}
+                    })
+                    .then((post) => {
+                        expect(post.title).toBe("Snowball Fighting");
+                        
+                        done();
+                    });
+                });
+            });
+       
+        });
+
     });
+    // end the admin user context
+
+
+    // define the member user context
+    describe("member user performing CRUD actions for Post", () => {
+
+        describe("GET /topics/:topicId/posts/new", () => {
+
+            it("should render a new post form", (done) => {
+                request.get(`${base}/${this.topic.id}/posts/new`, (err, res, body) => {
+                    expect(err).toBeNull();
+                    expect(body).toContain("New Post");
+                    
+                    done();
+                });
+            });
+        
+        });
+    
+        describe("POST /topics/:topicId/posts/create", () => {
+    
+            it("should create a new post and redirect", (done) => {
+                const options = {
+                    url: `${base}/${this.topic.id}/posts/create`,
+                    form: {
+                        title: "Watching snow fall",
+                        body: "It's the best time of the year!"
+                    }
+                };
+                request.post(options, (err, res, body) => {
+    
+                    Post.findOne({where: {title: "Watching snow fall"}})
+                    .then((post) => {
+                        expect(post).not.toBeNull();
+                        expect(post.title).toBe("Watching snow fall");
+                        expect(post.body).toBe("It's the best time of the year!");
+                        expect(post.topicId).not.toBeNull();
+                        
+                        done();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    
+                        done();
+                    });
+                });
+            });
+    
+            it("should not create a new post that fails validations", (done) => {
+                const options = {
+                    url: `${base}/${this.topic.id}/posts/create`,
+                    form: {
+         
+         // pass in values that should not pass validations
+                        title: "a",
+                        body: "b"
+                    }
+                };
+         
+                request.post(options, (err, res, body) => {
+         
+         // look for a post matching the title passed in with the request and confirm that one doesn't exist
+                    Post.findOne({where: {title: "a"}})
+                    .then((post) => {
+                        expect(post).toBeNull();
+                        
+                        done();
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                        
+                        done();
+                    });
+                  }
+                );
+            });
+         
+        });
+    
+        describe("GET /topics/:topicId/posts/:id", () => {
+    
+            it("should render a view with the selected post", (done) => {
+                request.get(`${base}/${this.topic.id}/posts/${this.post.id}`, (err, res, body) => {
+                    expect(err).toBeNull();
+                    expect(body).toContain("Snowball Fighting");
+                    
+                    done();
+                });
+            });
+       
+        });
+    
+        describe("POST /topics/:topicId/posts/:id/destroy", () => {
+    
+            it("should delete the post with the associated ID", (done) => {
+                expect(this.post.id).toBe(1);
+                request.post(`${base}/${this.topic.id}/posts/${this.post.id}/destroy`, (err, res, body) => {
+    
+                    Post.findById(1)
+                    .then((post) => {
+                        expect(err).toBeNull();
+                        expect(post).toBeNull();
+                        
+                        done();
+                    })
+        
+                });
+    
+            });
+       
+        });
+    
+        describe("GET /topics/:topicId/posts/:id/edit", () => {
+    
+            it("should render a view with an edit post form", (done) => {
+                request.get(`${base}/${this.topic.id}/posts/${this.post.id}/edit`, (err, res, body) => {
+                    expect(err).toBeNull();
+                    expect(body).toContain("Edit Post");
+                    expect(body).toContain("Snowball Fighting");
+                    
+                    done();
+                });
+            });
+       
+        });
+    
+        describe("POST /topics/:topicId/posts/:id/update", () => {
+    
+            it("should return a status code 302", (done) => {
+                request.post({
+                    url: `${base}/${this.topic.id}/posts/${this.post.id}/update`,
+                    form: {
+                        title: "Snowman Building Competition",
+                        body: "Who can build the largest of them all?"
+                    }
+                }, 
+                (err, res, body) => {
+                    expect(res.statusCode).toBe(302);
+                    
+                    done();
+                });
+            });
+       
+            it("should update the post with the given values", (done) => {
+                const options = {
+                    url: `${base}/${this.topic.id}/posts/${this.post.id}/update`,
+                    form: {
+                        title: "Snowman Building Competition"
+                    }
+                };
+                request.post(options, (err, res, body) => {
+    
+                    expect(err).toBeNull();
+    
+                    Post.findOne({
+                        where: {id: this.post.id}
+                    })
+                    .then((post) => {
+                        expect(post.title).toBe("Snowball Fighting");
+                        
+                        done();
+                    });
+                });
+            });
+       
+        });    
+
+    });
+    // end the member user context
 
 });
