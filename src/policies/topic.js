@@ -23,8 +23,4 @@ module.exports = class TopicPolicy extends ApplicationPolicy {
   destroy() {
     return this.update();
   }
-<<<<<<< HEAD
-  
-=======
->>>>>>> attempt-2-checkpoint-authorization
 }

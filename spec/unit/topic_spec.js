@@ -1,10 +1,6 @@
 const sequelize = require("../../src/db/models/index").sequelize;
 const Topic = require("../../src/db/models").Topic;
 const Post = require("../../src/db/models").Post;
-<<<<<<< HEAD
-// require the User model to use it in our tests
-=======
->>>>>>> attempt-2-checkpoint-authorization
 const User = require("../../src/db/models").User;
 
 describe("Post", () => {
@@ -16,42 +12,6 @@ describe("Post", () => {
    
         sequelize.sync({force: true}).then((res) => {
    
-<<<<<<< HEAD
-// create a User object
-            User.create({
-                email: "starman@tesla.com",
-                password: "Trekkie4lyfe"
-                })
-                .then((user) => {
-                    this.user = user; //store the user
-   
-// create a Topic object
-                    Topic.create({
-                        title: "Expeditions to Alpha Centauri",
-                        description: "A compilation of reports from recent visits to the star system.",
-   
-// for each object in posts, Sequelize will create a Post object with the attribute values provided
-                        posts: [{
-                            title: "My first visit to Proxima Centauri b",
-                            body: "I saw some rocks.",
-                            userId: this.user.id
-                        }]
-                    }, {
-   
-// the include property allows us to tell the method what model to use as well as where to store the resulting posts as in the Topic object
-                            include: {
-                                model: Post,
-                                as: "posts"
-                            }
-                    })
-                    .then((topic) => {
-                        this.topic = topic; //store the topic
-                        this.post = topic.posts[0]; //store the post
-                        
-                        done();
-                    })
-                })
-=======
    // #2
           User.create({
             email: "starman@tesla.com",
@@ -85,7 +45,6 @@ describe("Post", () => {
               done();
             })
           })
->>>>>>> attempt-2-checkpoint-authorization
         });
     });
 

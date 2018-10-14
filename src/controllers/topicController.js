@@ -27,10 +27,6 @@ module.exports = {
 
     create(req, res, next){
         const authorized = new Authorizer(req.user).create();
-<<<<<<< HEAD
-
-=======
->>>>>>> attempt-2-checkpoint-authorization
         if(authorized) {
             let newTopic = {
                 title: req.body.title,
@@ -44,13 +40,8 @@ module.exports = {
                 }
             });
             } else {
-<<<<<<< HEAD
-                req.flash("notice", "You are not authorized to do that.");
-                res.redirect("/topics");
-=======
             req.flash("notice", "You are not authorized to do that.");
             res.redirect("/topics");
->>>>>>> attempt-2-checkpoint-authorization
             }
     },
 
@@ -65,10 +56,6 @@ module.exports = {
     },
 
     destroy(req, res, next){
-<<<<<<< HEAD
-
-=======
->>>>>>> attempt-2-checkpoint-authorization
         topicQueries.deleteTopic(req, (err, topic) => {
             if(err){
                 res.redirect(err, `/topics/${req.params.id}`)
