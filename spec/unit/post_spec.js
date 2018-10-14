@@ -86,7 +86,8 @@ describe("Post", () => {
        
                 expect(err.message).toContain("Post.body cannot be null");
                 expect(err.message).toContain("Post.topicId cannot be null");
-                
+                console.log(err);
+
                 done();
        
             })
@@ -105,17 +106,22 @@ describe("Post", () => {
             })
             .then((newTopic) => {
     
-    // Confirm the association of the topic and post objects created in the  beforeEach call
-            expect(this.post.topicId).toBe(this.topic.id);
-    // Call setTopic on post and associate it with the new topic, newTopic
-            this.post.setTopic(newTopic)
-            .then((post) => {
-    // Confirm the new association
-                expect(post.topicId).toBe(newTopic.id);
-                
-                done();
-    
-            });
+        // Confirm the association of the topic and post objects created in the  beforeEach call
+                expect(this.post.topicId).toBe(this.topic.id);
+        // Call setTopic on post and associate it with the new topic, newTopic
+                this.post.setTopic(newTopic)
+                .then((post) => {
+        // Confirm the new association
+                    expect(post.topicId).toBe(newTopic.id);
+                    
+                    done();
+        
+                })
+                .catch((err) => {
+                    console.log(err);
+                    
+                    done();
+                });
             })
         });
     
