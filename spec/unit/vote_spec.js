@@ -107,6 +107,20 @@ describe("Vote", () => {
             });
         });
 
+        it("should not create a vote with a value that is not 1 or -1", (done) => {
+            Vote.create({
+                value: 2,
+                postId: this.post.id,
+                userId: this.user.id
+            })
+            .then((vote) => {
+            })
+            .catch((err) => {
+                expect(err.message).toContain("Validation isIn on value failed");
+                done();
+            });
+        });
+
     });
 
     describe("#getUser()", () => {
@@ -195,5 +209,77 @@ describe("Vote", () => {
         });
    
     });
+
+
+    
+    // START UPVOTE CONTEXT
+    describe("#hasUpvoteFor()", () => {
+
+        it("should return true if the user with the matching userId has an upvote for a given post", done => {
+            Vote.create({
+                value: 1,
+                postId: this.post.id,
+                userId: this.user.id,
+            }).then(vote => {
+                this.vote = vote;
+                 Post.create({
+                    title: "Testing hasUpvoteFor",
+                    body: "Writing tests is my favorite",
+                    topicId: this.topic.id,
+                    userId: this.user.id,
+                }).then(newPost => {
+                    expect(this.vote.postId).not.toBe(newPost.id);
+                     this.vote.setPost(newPost).then(vote => {
+                        expect(vote.postId).toBe(newPost.id);
+                        expect(this.vote.userId).toBe(newPost.userId);
+                        newPost.hasUpvoteFor(newPost.userId).then(votes => {
+                            expect(votes.length > 0).toBe(true);
+                            
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+    });
+    // END UPVOTE CONTEXT
+
+
+
+    // START DOWNVOTE CONTEXT
+    describe("#hasDownvoteFor()", () => { //start of hasDownvoteFor
+        
+        it("should return true if the user with the matching userId has a downvote for a given post", done => {
+            Vote.create({
+                value: -1,
+                postId: this.post.id,
+                userId: this.user.id,
+            }).then(vote => {
+                this.vote = vote;
+                 Post.create({
+                    title: "Testing hasDownvoteFor",
+                    body: 'Do not let me down hasDownvoteFor test',
+                    topicId: this.topic.id,
+                    userId: this.user.id,
+                }).then(newPost => {
+                    expect(this.vote.postId).not.toBe(newPost.id);
+                     this.vote.setPost(newPost).then(vote => {
+                        expect(vote.postId).toBe(newPost.id);
+                        expect(this.vote.userId).toBe(newPost.userId);
+                        newPost.hasDownvoteFor(newPost.userId).then(votes => {
+                            expect(votes.length > 0).toBe(true);
+                            
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+    });
+    // END DOWNVOTE CONTEXT
  
+
+
 });

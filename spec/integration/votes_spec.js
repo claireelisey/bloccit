@@ -128,21 +128,79 @@ describe("routes : votes", () => {
    
         describe("GET /topics/:topicId/posts/:postId/votes/upvote", () => {
    
-          it("should create an upvote", (done) => {
-            const options = {
-                url: `${base}${this.topic.id}/posts/${this.post.id}/votes/upvote`
-            };
-            request.get(options,
+            it("should create an upvote", (done) => {
+                const options = {
+                    url: `${base}${this.topic.id}/posts/${this.post.id}/votes/upvote`
+                };
+                request.get(options,
+                    (err, res, body) => {
+                        Vote.findOne({          
+                            where: {
+                                userId: this.user.id,
+                                postId: this.post.id
+                            }
+                        })
+                        .then((vote) => {               // confirm that an upvote was created
+                            expect(vote).not.toBeNull();
+                            expect(vote.value).toBe(1);
+                            expect(vote.userId).toBe(this.user.id);
+                            expect(vote.postId).toBe(this.post.id);
+                            
+                            done();
+                        })
+                        .catch((err) => {
+                            console.log(err);
+                            
+                            done();
+                        });
+                    }
+                );
+            });
+
+            it("should not create another upvote if user has already upvoted", (done) => {
+                Post.findOne({where: {title: "My first visit to Proxima Centauri b"}})
+                .then((post) => {
+                    this.post = post;
+                    Vote.create({
+                        value: 1,
+                        postId: this.post.id,
+                        userId: this.user.id
+                    })
+                    .then((vote) => {
+                        Vote.create({
+                            value: 1,
+                            postId: this.post.id,
+                            userId: this.user.id
+                        })
+                        .then((secondVote) => {
+                            done();
+                        })
+                        .catch((err) => {
+                            expect(err.message).toContain("Validation error");
+                        });
+                    });
+                });
+            });
+
+        });
+   
+        describe("GET /topics/:topicId/posts/:postId/votes/downvote", () => {
+   
+            it("should create a downvote", (done) => {
+                const options = {
+                    url: `${base}${this.topic.id}/posts/${this.post.id}/votes/downvote`
+                };
+                request.get(options,
                 (err, res, body) => {
-                    Vote.findOne({          
+                    Vote.findOne({
                         where: {
                             userId: this.user.id,
                             postId: this.post.id
                         }
                     })
-                    .then((vote) => {               // confirm that an upvote was created
+                    .then((vote) => {               // confirm that a downvote was created
                         expect(vote).not.toBeNull();
-                        expect(vote.value).toBe(1);
+                        expect(vote.value).toBe(-1);
                         expect(vote.userId).toBe(this.user.id);
                         expect(vote.postId).toBe(this.post.id);
                         
@@ -154,40 +212,34 @@ describe("routes : votes", () => {
                         done();
                     });
                 }
-            );
-          });
-        });
-   
-        describe("GET /topics/:topicId/posts/:postId/votes/downvote", () => {
-   
-          it("should create a downvote", (done) => {
-            const options = {
-                url: `${base}${this.topic.id}/posts/${this.post.id}/votes/downvote`
-            };
-            request.get(options,
-              (err, res, body) => {
-                Vote.findOne({
-                    where: {
-                        userId: this.user.id,
-                        postId: this.post.id
-                    }
-                })
-                .then((vote) => {               // confirm that a downvote was created
-                    expect(vote).not.toBeNull();
-                    expect(vote.value).toBe(-1);
-                    expect(vote.userId).toBe(this.user.id);
-                    expect(vote.postId).toBe(this.post.id);
-                    
-                    done();
-                })
-                .catch((err) => {
-                    console.log(err);
-                    
-                    done();
+                );
+            });
+
+            it("should not create another downvote if user has already downvoted", (done) => {
+                Post.findOne({where: {title: "My first visit to Proxima Centauri b"}})
+                .then((post) => {
+                    this.post = post;
+                    Vote.create({
+                        value: -1,
+                        postId: this.post.id,
+                        userId: this.user.id
+                    })
+                    .then((vote) => {
+                        Vote.create({
+                            value: -1,
+                            postId: this.post.id,
+                            userId: this.user.id
+                        })
+                        .then((secondVote) => {
+                            done();
+                        })
+                        .catch((err) => {
+                            expect(err.message).toContain("Validation error");
+                        });
+                    });
                 });
-              }
-            );
-          });
+            });
+
         });
    
       });
