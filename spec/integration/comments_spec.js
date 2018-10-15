@@ -192,7 +192,7 @@ describe("routes : comments", () => {
                 );
             });
         });
-        
+
         // Ensure a user who is signed in is able to destroy a comment.
         describe("POST /topics/:topicId/posts/:postId/comments/:id/destroy", () => {
 
@@ -219,11 +219,47 @@ describe("routes : comments", () => {
                 })
      
             });
-     
-        });     
+
+            // Ensure a member is not able to destroy another member's comment.
+            it("should not delete another members comment", (done) => {
+                User.create({
+                    email: "david@davidbowie.com",
+                    password: "123456789"
+                })
+                .then((user) => {
+                    expect(user.email).toBe("david@davidbowie.com");
+                    expect(user.id).toBe(2);
+                    request.get({
+                        url: "http://localhost:3000/auth/fake",
+                        form: {
+                            role: "member",
+                            userId: user.id
+                        }
+                    }, (err, res, body) => {
+                        done();
+                    });
+                    Comment.all()
+                    .then((comments) => {
+                        const commentCountBeforeDelete = comments.length;
+                        expect(commentCountBeforeDelete).toBe(1);
+                        request.post(
+                            `${base}${this.topic.id}/posts/${this.post.id}/comments/${this.comment.id}/destroy`,
+                                (err, res, body) => {
+                                    Comment.all() 
+                                    .then((comments) => {
+                                        expect(err).toBeNull();
+                                        expect(comments.length).toBe(commentCountBeforeDelete);
+                                        done();
+                                    })
+                                });
+                    });
+                });
+            });
+        });
 
     });
     // END SIGNED-IN (MEMBER) USER CONTEXT
+
 
     // ADMIN USER CONTEXT
     describe("admin attempting to perform CRUD actions for Comment", () => {
@@ -250,18 +286,20 @@ describe("routes : comments", () => {
                 Comment.all()
                 .then((comments) => {
                     const commentCountBeforeDelete = comments.length;
+
                     expect(commentCountBeforeDelete).toBe(1);
+
                     request.post(
                         `${base}${this.topic.id}/posts/${this.post.id}/comments/${this.comment.id}/destroy`,
                         (err, res, body) => {
                             expect(res.statusCode).toBe(302);
                             Comment.all()
-                                .then((comments) => {
-                                    expect(err).toBeNull();
-                                    expect(comments.length).toBe(commentCountBeforeDelete - 1);
-                                    
-                                    done();
-                                })
+                            .then((comments) => {
+                                expect(err).toBeNull();
+                                expect(comments.length).toBe(commentCountBeforeDelete - 1);
+                                
+                                done();
+                            })
                         });
                 });
             });
