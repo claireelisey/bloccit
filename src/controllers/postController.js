@@ -35,14 +35,14 @@ module.exports = {
             });
         } else {
             req.flash("notice", "You are not authorized to do that.");
-            res.redirect("/posts");
+            res.redirect(`/topics/${req.params.topicId}`);
         }
     },
 
     show(req, res, next){
         postQueries.getPost(req.params.id, (err, post) => {
             if(err || post == null){
-                res.redirect(404, "/");
+                res.redirect(404, `/topics/${req.params.topicId}`);
             } else {
                 res.render(`/topics/${req.params.topicId}/posts/${req.params.id}`, {post});
             }
@@ -71,7 +71,7 @@ module.exports = {
                     res.render("posts/edit", {post});
                 } else {
                     req.flash("You are not allowed to do that.");
-                    res.redirect(`/posts/${req.params.id}`);
+                    res.redirect(`/topics/${req.params.topicId}/posts/${req.params.id}`);
                 }        
             }
         });
