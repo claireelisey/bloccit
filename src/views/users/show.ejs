@@ -50,6 +50,26 @@
                 <% }) %>
                 <% } %>
             </ul>
+
+            <hr>
+
+            <h2> Favorite Posts</h2>
+
+            <ul class="list-unstyled">
+
+                <% if(favorites) { %>
+                    <% favorites.forEach((favorite) => { %>
+                    <li>
+                        <span>Post: </span><a href="/topics/<%= favorite.postId %>/posts/<%= favorite.postId %>">
+                        <%= favorite.Post.title %>
+                        </a>
+                    </li>
+                    <% }) %>
+                <% } %>
+            </ul>
+
+
+
         </main>
 
         <% include ../static/partials/baseScripts.ejs %>

@@ -112,5 +112,12 @@ module.exports = (sequelize, DataTypes) => {
     }
   });
 
+  Post.addScope("listFavorites", (userId) => {
+    return {
+      where: { userId: userId},
+      order: [["createdAt", "DESC"]]
+    }
+  });
+
   return Post;
 };

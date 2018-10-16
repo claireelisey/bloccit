@@ -6,6 +6,7 @@ const User = require("../../src/db/models").User;
 const Topic = require("../../src/db/models").Topic;
 const Post = require("../../src/db/models").Post;
 const Comment = require("../../src/db/models").Comment;
+const Favorite = require("../../src/db/models").Favorite;
 
 describe("routes : users", () => {
 
@@ -117,6 +118,7 @@ describe("routes : users", () => {
             this.user;
             this.post;
             this.comment;
+            this.favorite;
     
             User.create({
                 email: "starman@tesla.com",
@@ -140,18 +142,29 @@ describe("routes : users", () => {
                 }
                 })
                 .then((res) => {
-                this.post = res.posts[0];
-    
-                Comment.create({
-                    body: "This comment is alright.",
-                    postId: this.post.id,
-                    userId: this.user.id
-                })
-                .then((res) => {
-                    this.comment = res;
-                    
-                    done();
-                })
+                    this.post = res.posts[0];
+        
+                    Comment.create({
+                        body: "This comment is alright.",
+                        postId: this.post.id,
+                        userId: this.user.id
+                    })
+                    .then((res) => {
+                        this.comment = res;
+
+                        done();                   
+                    })
+
+                    Favorite.create({
+                        postId: this.post.id,
+                        userId: this.user.id
+                    })
+                    .then((res) => {
+                        this.favorite = res;
+                        
+                        done();
+                    })
+
                 })
             })
    
@@ -160,7 +173,7 @@ describe("routes : users", () => {
         it("should present a list of comments and posts a user has created", (done) => {
             request.get(`${base}${this.user.id}`, (err, res, body) => {
                 expect(body).toContain("Snowball Fighting");
-                expect(body).toContain("This comment is alright.")
+                expect(body).toContain("This comment is alright.");
                 
                 done();
             });
